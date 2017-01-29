@@ -20,8 +20,39 @@ Importing simone results into Neo4j:
 
 ```{r}
 
-defaulNet1 <- read.csv(file.choose(), row.names = 1)
-defaulNet1Theta <- read.csv(file.choose(), row.names = 1)
+# Read in relationship csv from simone output. 
+defaultNet1 <- read.csv(file.choose(), row.names = 1)
+
+# Read in theta values for relationships from csv from simone output.
+defaultNet1Theta <- read.csv(file.choose(), row.names = 1)
+
+# Find indices for 1's in sparse matrix that indicate relationships. 
+indexRel <- which(defautlNet1 != 0, arr.ind = T)
+
+# Create data.frame for Genes for importation. 
+relGenes <- data.frame(From = rownames(indexRel), 
+                       To = colnames(defaultNet1)[indexRel[, 2]])
+
+# Add the R package used to find these relationships as a column. 
+relGenes$Method <- rep("simone", dim(relGenes)[1])
+
+# Add theta values to data.frame. 
+indexTheta <- which(defaultNet1Theta != 0, arr.ind = T)
+
+# Grab values of theta using the index values. 
+Theta <- as.matrix(defaultNet1Theta[indexTheta[, 1], indexTheta[, 2]])
+
+# Append to relGenes data.frame. 
+relGenes$Theta <- diag(Theta)
+
+```
+
+Now, import data.frame into Neo4j. 
+
+```{Cypher}
+
+
+
 
 ```
 
