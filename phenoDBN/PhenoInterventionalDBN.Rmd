@@ -1,0 +1,57 @@
+---
+title: "Creating a Phenotypic Network From Well-Watered and Droughted Brassica plants using the R package interventionalDBN"
+output: html_notebook
+---
+
+In order use interventionalDBN, we will need to manipulate the data to get it into the correct format. 
+```{r}
+# Load necessary packages. 
+library(data.table)
+library(interventionalDBN)
+
+# Import data. 
+Pheno <- read.csv(file = "/Users/mblai/Documents/PhenoBrassicaImp.csv")
+
+# Convert to data.table for easy averaging. 
+Pheno <- as.data.table(Pheno)
+
+# Average phenotype values across replicates. 
+avgPheno <- Pheno[, .(Photo = mean(Photo), gs = mean(gs), 
+             FvFm = mean(Fv.Fm.), Starch = mean(Starch),
+             NSC = mean(NSC), SM = mean(SM...)), 
+         by = .(Timepoint, Treatment)]
+
+# Order by Treatment. 
+avgPheno <- avgPheno[order(Treatment),]
+
+# Create data.frame in appropriate format: Cell.line, Inhibitor, 
+# Stimuli, Timepoint, and expression values. 
+phenoNet <- data.frame(Cell.line = rep(1, 24), 
+                       Inhibitor = avgPheno$Treatment, 
+                       Stimuli = rep("WW", 24), 
+                       Timepoint = avgPheno$Timepoint, 
+                       avgPheno[, 3:8])
+
+# Definite baseline as WW and inhibited as Dry.
+droughtEffects <- interventionEffects(phenoNet, 1, "WW", "Dry")
+
+# Update phenoNet to the correct format using the interventionalDBN
+# formatData function. 
+phenoNet <- formatData(phenoNet)
+
+# Create an empty n by P (# of obs by # of cols of expression data) 
+# Z matrix.
+Z <- matrix(0, 24, 6)
+
+```
+
+```{r}
+
+# Perform inference for DBN.
+pNetwork <- interventionalInference(phenoNet$y, phenoNet$X0, 
+                                    phenoNet$X1, Z, max.indeg = 3,
+                                     perfectOut = T, fixedEffectOut = T)
+
+```
+
+
