@@ -1,0 +1,27 @@
+---
+title: "Importing DBNs to Neo4j"
+output: html_notebook
+---
+
+I began by creating a folder named DBNdb. By choosing this folder as my database location for Neo4j, it was initialized as a database. I created an import folder within DBNdb and moved desired csv's for importation into the folder. 
+
+Importing GRENITS results into Neo4j:
+
+```{Cypher}
+
+LOAD CSV WITH HEADERS FROM 'file:///prob_above08.csv' AS line
+MERGE (a:Gene {name:line.From})
+MERGE (b:Gene {name:line.To})
+MERGE (a)-[:RELATED_TO {method: "GRENITS", Prob: TOINT( line.Probability), Strength: TOINT(line.Strength)}]->(b);
+
+```
+
+Importing simone results into Neo4j:
+
+```{r}
+
+defaulNet1 <- read.csv(file.choose(), row.names = 1)
+defaulNet1Theta <- read.csv(file.choose(), row.names = 1)
+
+```
+
