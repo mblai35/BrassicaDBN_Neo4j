@@ -12,11 +12,11 @@ Importing GRENITS results into Neo4j:
 LOAD CSV WITH HEADERS FROM 'file:///prob_above08.csv' AS line
 MERGE (a:Gene {name:line.From})
 MERGE (b:Gene {name:line.To})
-MERGE (a)-[:RELATED_TO {method: "GRENITS", Prob: TOINT( line.Probability), Strength: TOINT(line.Strength)}]->(b);
+MERGE (a)-[:RELATED_TO {method: "GRENITS", Prob: TOFLOAT( line.Probability), Strength: TOFLOAT(line.Strength)}]->(b);
 
 ```
 
-Importing simone results into Neo4j:
+Importing simone results (Network 1) into Neo4j:
 
 ```{r}
 
@@ -45,14 +45,70 @@ Theta <- as.matrix(defaultNet1Theta[indexTheta[, 1], indexTheta[, 2]])
 # Append to relGenes data.frame. 
 relGenes$Theta <- diag(Theta)
 
+# Write csv to file. 
+write.csv(relGenes, file = "simoneDEDBN.csv")
+
 ```
 
-Now, import data.frame into Neo4j. 
+Now, I copied the csv into the import file for the database. To import into Neo4j:
 
 ```{Cypher}
 
-
-
+LOAD CSV WITH HEADERS FROM 'file:///simoneDEDBN.csv' AS line
+MERGE (a:Gene {name:line.From})
+MERGE (b:Gene {name:line.To})
+MERGE (a)-[:RELATED_TO {method: line.Method, Theta: TOFLOAT( line.Theta)}]->(b);
 
 ```
+
+Now import simone results (Network 2) by repeatings steps from above.
+
+```{r}
+
+# Read in relationship csv from simone output. 
+defaultNet2 <- read.csv(file.choose(), row.names = 1)
+
+# Read in theta values for relationships from csv from simone output.
+defaultNet2Theta <- read.csv(file.choose(), row.names = 1)
+
+# Find indices for 1's in sparse matrix that indicate relationships. 
+indexRel <- which(defaultNet2 != 0, arr.ind = T)
+
+# Create data.frame for Genes for importation. 
+relGenes <- data.frame(From = rownames(indexRel), 
+                       To = colnames(defaultNet2)[indexRel[, 2]])
+
+# Add the R package used to find these relationships as a column. 
+relGenes$Method <- rep("simone", dim(relGenes)[1])
+
+# Add theta values to data.frame. 
+indexTheta <- which(defaultNet2Theta != 0, arr.ind = T)
+
+# Grab values of theta using the index values. 
+Theta <- as.matrix(defaultNet2Theta[indexTheta[, 1], indexTheta[, 2]])
+
+# Append to relGenes data.frame. 
+relGenes$Theta <- diag(Theta)
+
+# Write csv to file. 
+write.csv(relGenes, file = "simoneDEDBN2.csv")
+
+```
+
+Now, I copied the csv into the import file for the database. To import into Neo4j:
+
+```{Cypher}
+
+LOAD CSV WITH HEADERS FROM 'file:///simoneDEDBN2.csv' AS line
+MERGE (a:Gene {name:line.From})
+MERGE (b:Gene {name:line.To})
+MERGE (a)-[:RELATED_TO {method: line.Method, Theta: TOFLOAT( line.Theta)}]->(b);
+
+```
+
+Differences between Network 1 and Network 2 are minimal. Network 2 doesn't need to be included in database. 
+
+
+
+
 
