@@ -10,7 +10,7 @@ library(data.table)
 library(interventionalDBN)
 
 # Import data. 
-Pheno <- read.csv(file = "/Users/mblai/Documents/PhenoBrassicaImp.csv")
+Pheno <- read.csv(file = "/Users/mblai/Documents/Thesis/Code/DataWrangling/PhenoBrassicaImp.csv", row.names = 1)
 
 # Convert to data.table for easy averaging. 
 Pheno <- as.data.table(Pheno)
@@ -53,5 +53,6 @@ pNetwork <- interventionalInference(phenoNet$y, phenoNet$X0,
                                      perfectOut = T, fixedEffectOut = T)
 
 ```
+
 
 

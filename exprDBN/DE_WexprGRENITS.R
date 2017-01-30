@@ -1,10 +1,9 @@
-# DEexprGRENITS.R
+# DE_WexprGRENITS.R
 # R version 3.3.1 (2016-06-21)
-# January 27, 2017. Mallory B. Lai.
+# January 29, 2017. Mallory B. Lai.
 # Reviewed by: TODO (Mallory B. Lai) : Find reviewer to proofread
-# Creating transcriptomic network for Brassica data using 
-# simone package. Expression data taken from Brassica under well-watered
-# and droughted conditions. 
+# Creating transcriptomic network for well-watered Brassica data using 
+# GRENITS package. 
 
 #-----------------------------------------------------------------------
 library(GRENITS)
@@ -16,6 +15,9 @@ library(dplyr)
 # Read in the data. 
 Brassica <- read.csv(file = "BrassicaDEgenes.csv", row.names = 1)
 
+# Remove well-watered conditions. 
+Brassica <- Brassica[, 25:48]
+
 # Manipulate data so rep2 set follows rep1 set.
 Brassica <- data.frame(select(Brassica, -ends_with("rep2")), 
                       select(Brassica, -ends_with("rep1")))
@@ -23,7 +25,7 @@ Brassica <- data.frame(select(Brassica, -ends_with("rep2")),
 #### Network Inference:
 
 # Create tempdir folder to hold MCMC files in output.folder. 
-resultsFolder <- paste(getwd(), "/DEexpGRENTIS_gauss", sep = "")
+resultsFolder <- paste(getwd(), "/DE_WexpGRENITS_gauss", sep = "")
 
 # Run MCMC function; 2 chains, default parameters
 ReplicatesNet_gauss(resultsFolder, Brassica, numReps = 2)
@@ -49,7 +51,8 @@ inferred.net <- 1 * (prob.mat > 0.8)
 
 # View inferred network. 
 write.csv(inferred.net, file = 
-            paste(getwd(), "/DEexpGRENTIS_gauss/inferred.csv", sep = ""))
+            paste(getwd(), "/DE_WexpGRENITS_gauss/inferred.csv", 
+                  sep = ""))
 
 # For information on direction of the interaction, see 
 # NetworkProbability_List.txt
@@ -65,5 +68,6 @@ above.08 <- (prob.list[, 3] > 0.8)
 
 # Print out genes where the probability is greater than .8.
 write.csv((prob.list[above.08, ]), file = 
-            paste(getwd(), "/DEexpGRENTIS_gauss/prob_above08.csv", sep = ""))
+            paste(getwd(), "/DE_WexpGRENITS_gauss/prob_above08.csv", 
+                  sep = ""))
 
