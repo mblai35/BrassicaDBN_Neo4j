@@ -1,6 +1,6 @@
 # DE_WstudExprGRENITS.R
 # R version 3.3.1 (2016-06-21)
-# January 29, 2017. Mallory B. Lai.
+# January 31, 2017. Mallory B. Lai.
 # Reviewed by: TODO (Mallory B. Lai) : Find reviewer to proofread
 # Creating transcriptomic network for well-watered Brassica data using 
 # GRENITS package. 
