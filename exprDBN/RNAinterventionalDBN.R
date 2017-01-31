@@ -15,6 +15,10 @@ library(data.table)
 # Read in the data. 
 genes <- read.csv(file = "BrassicaDEgenes.csv", row.names = 1)
 
+# Create directory to store output. 
+dir.create(paste(getwd(), "/RinterDBN", sep = ""))
+setwd(paste(getwd(), "/RinterDBN", sep = ""))
+
 # Remove cluster column. 
 genes <- genes[, -49]
 
@@ -30,18 +34,25 @@ genes <- genes[, 'Treatment'  := str_split_fixed(genes$rn, "", 2)[, 1]]
 genes <- genes[, 'Timepoint'  := str_split_fixed(genes$rn, "", 2)[, 2]]
 genes <- genes[, 'rn' := NULL]
 
-#avgRNA <- genes[, mean(genes[, 1:4583]), by = .(Timepoint, Treatment)]
+# Average replicates. 
+genes <- genes[, lapply(.SD, mean), by= .(Timepoint, Treatment) ]
+# NOTE: this changes data.table so that Timepoint and Treatment are the 
+# first two columns instead of the last. 
+
+# Make Timepoint an integer and Treatment a factor. 
+genes$Timepoint <- as.integer(genes$Timepoint)
+genes$Treatment <- as.factor(genes$Treatment)
 
 # Create data.frame in appropriate format: Cell.line, Inhibitor, 
 # Stimuli, Timepoint, and expression values. 
-rnaNet <- data.frame(Cell.line = rep(1, 48), 
+rnaNet <- data.frame(Cell.line = rep(1, 24), 
                        Inhibitor = genes$Treatment, 
-                       Stimuli = rep("WW", 48), 
+                       Stimuli = rep("W", 24), 
                        Timepoint = genes$Timepoint, 
-                       genes[, 1:230])
+                       genes[, 3:(dim(genes)[2])])
 
 # Define baseline as WW and inhibited as Dry.
-droughtEffects <- interventionEffects(rnaNet, 1, "WW", "Dry")
+droughtEffects <- interventionEffects(rnaNet, 1, "W", "D")
 
 # Update phenoNet to the correct format using the interventionalDBN
 # formatData function. 
@@ -49,11 +60,17 @@ Net <- formatData(rnaNet)
 
 # Create an empty n by P (# of obs by # of cols of expression data) 
 # Z matrix.
-Z <- matrix(0, 48, 230)
-
+Z <- matrix(0, 24, 230)
 
 # Perform inference for DBN.
 Network <- interventionalInference(Net$y,Net$X0, 
                                     Net$X1, Z, max.indeg = 3,
                                     perfectOut = T, fixedEffectOut = T)
+
+# Write output to csv file. 
+write.csv(Network$pep, file = "pep.csv")
+write.csv(Network$MAP, file = "MAP.csv")
+write.csv(Network$MAPprob, file = "MAPprob.csv")
+write.csv(Network$marginal.likelihood, 
+          file = "marginalLikelihood.csv")
 
