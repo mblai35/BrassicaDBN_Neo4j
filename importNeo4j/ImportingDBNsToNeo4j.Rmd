@@ -27,7 +27,7 @@ defaultNet1 <- read.csv(file.choose(), row.names = 1)
 defaultNet1Theta <- read.csv(file.choose(), row.names = 1)
 
 # Find indices for 1's in sparse matrix that indicate relationships. 
-indexRel <- which(defautlNet1 != 0, arr.ind = T)
+indexRel <- which(defaultNet1 != 0, arr.ind = T)
 
 # Create data.frame for Genes for importation. 
 relGenes <- data.frame(From = rownames(indexRel), 
