@@ -18,6 +18,9 @@ Brassica <- read.csv(file = "BrassicaDEgenes.csv", row.names = 1)
 # Remove well-watered conditions. 
 Brassica <- Brassica[, 1:24]
 
+# Keep only the last three time points.
+Brassica <- Brassica[, 19:24]
+
 # Manipulate data so rep2 set follows rep1 set.
 Brassica <- data.frame(select(Brassica, -ends_with("rep2")), 
                       select(Brassica, -ends_with("rep1")))
