@@ -18,9 +18,6 @@ Brassica <- read.csv(file = "BrassicaDEgenes.csv", row.names = 1)
 # Remove cluster from Brassica. 
 Brassica <- Brassica[, 1:48]
 
-# Transpose data set. 
-Brassica <- t(Brassica)
-
 # Create vector of Treatment values. 
 Tmnt <- as.factor(c(rep("Dry", 24), rep("WW", 24)))
 
