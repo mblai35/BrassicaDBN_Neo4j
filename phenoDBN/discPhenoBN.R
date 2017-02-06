@@ -201,6 +201,7 @@ TP12 <- Pheno[Pheno$Timepoint == 12, ]
   # Fit parameters of Bayesian Network conditional on structure. 
   fit <- bn.fit(bn.t8, discTP8, method = "bayes")
   
-
-  
+  # Fit parameters of Bayesian Network for TP11, 
+  # conditioned on structure.
+  fit2 <- bn.fit(bn.t11, discTP11, method = "bayes")
   
