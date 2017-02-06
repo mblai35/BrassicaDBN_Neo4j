@@ -6,6 +6,10 @@
 # Brassica data using bnlearn package. Data taken from Brassica control
 # and droughted conditions. 
 
+
+# ERRORS!!!!!!!!
+
+
 #-----------------------------------------------------------------------
 library(igraph)
 library(visNetwork)

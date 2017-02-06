@@ -14,7 +14,7 @@ library(stringr)
 #### Preprocessing: 
 
 # Read in phenotype file. 
-rna <- read.csv(file.choose(), row.names = 1)
+rna <- read.csv(file = "BrassicaDEgenes.csv", row.names = 1)
 
 # Remove cluster column. 
 rna <- rna[, -49]
@@ -31,7 +31,7 @@ rna <- as.data.frame(rna)
   discRNA <- discretize(rna, method = "interval", breaks = 5)
           
 # Split rownames into Treatment/Timepoint and Replicate. 
-rnaNames <- str_split_fixed(rownames(Rna), '_', 2)
+rnaNames <- str_split_fixed(rownames(rna), '_', 2)
 
 # Create a Timepoint column. 
 discRNA$Timepoint <- as.numeric(str_split_fixed(rnaNames[, 1], '', 2)[, 2])
@@ -55,9 +55,27 @@ TP8 <- discRNA[discRNA$Timepoint == 8, ]
   bn.t8 <- tabu(TP8, blacklist = bl, score = "bde",
                 iss = 10, tabu = 50)
   
-  # Plot network. 
-  plot(bn.t8, main = "TP8 Learned Interventions CO v DR")
+  # Write csv of network arcs. 
+  write.csv(bn.t8$arcs, file = "TP8gene.csv")
   
+# Subset only Timepoint 9. 
+  TP9 <- discRNA[discRNA$Timepoint == 9, ]
+  
+  # Remove Timepoint column from TP9. 
+  TP9 <- TP9[, -231]
+  
+  # Create list for blacklist.
+  tiers <- list("INT", names(TP9)[1:230])
+  
+  # Create blacklist.
+  bl <- tiers2blacklist(nodes = tiers)
+  
+  # Search for network.
+  bn.t8 <- tabu(TP9, blacklist = bl, score = "bde",
+                iss = 10, tabu = 50)
+  
+  # Write csv of network arcs. 
+  write.csv(bn.t8$arcs, file = "TP9gene.csv")
   
   
   
