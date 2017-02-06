@@ -196,4 +196,11 @@ TP12 <- Pheno[Pheno$Timepoint == 12, ]
   write.csv(bn.t11$arcs, file = "PhenoT11arcs.csv")
   write.csv(bn.t12$arcs, file = "PhenoT12arcs.csv")
 
+#### Try making a prediction. 
+  
+  # Fit parameters of Bayesian Network conditional on structure. 
+  fit <- bn.fit(bn.t8, discTP8, method = "bayes")
+  
 
+  
+  
