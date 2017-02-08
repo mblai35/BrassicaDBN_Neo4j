@@ -33,11 +33,16 @@ lambda <- 2/sqrt(n) * qnorm(alpha/(2 * p^2), lower.tail = F)
 Brassica <- Brassica[ , -c(1:16)]
 Brassica <- Brassica[ , -c(9:24)]
 
+# Grab only rep1. 
+rep1 <- seq(1, 16, by = 2)
+Brassica <- Brassica[, rep1]
+
 # Transpose data set. 
 Brassica <- t(Brassica)
 
 # Create vector of Treatment values. 
-Tmnt <- as.factor(c(rep("Dry", 8), rep("WW", 8)))
+#Tmnt <- as.factor(c(rep("Dry", 8), rep("WW", 8)))
+Tmnt <- as.factor(c(rep("Dry", 4), rep("WW", 4)))
 
 # Combine expression data and treatment vector in a list. 
 BrassicaExpr <- list(expr = data.frame(Brassica), status = Tmnt)
@@ -124,8 +129,8 @@ for (i in 3:4)
   #plot(DBNsimone)
   #dev.off()
   
-  #setwd("/Users/mblai/Documents")
-  setwd("C:/Users/Mallory/Documents")
+  setwd("/Users/mblai/Documents")
+  #setwd("C:/Users/Mallory/Documents")
 
 }
 

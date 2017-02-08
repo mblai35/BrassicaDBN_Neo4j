@@ -45,5 +45,9 @@ library(RNeo4j)
   
 
 # Start Neo4j graph. 
-graph = startGraph("http://localhost:7474/db/data/", username = "neo4j",
+graph = startGraph("http://localhost:7474/LinaDB/data/", username = "neo4j",
                    password = "plantanalytics")
+
+
+
+

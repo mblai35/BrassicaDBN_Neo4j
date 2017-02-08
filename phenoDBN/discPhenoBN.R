@@ -31,7 +31,7 @@ TP8 <- Pheno[Pheno$Timepoint == 8, ]
                         breaks = c(5, 5, 3, 5, 3, 5))
   
   # Add INT column. 
-  discTP8$INT <- TP8$Treatment
+  discTP8$INT <- as.factor(TP8$Treatment)
   
   # Let structure learning algorithm decide which arcs 
   # connect to INT.  
@@ -68,7 +68,7 @@ TP9 <- Pheno[Pheno$Timepoint == 9, ]
                              breaks = c(5, 5, 3, 5, 3, 5))
   
   # Add INT column. 
-  discTP9$INT <- TP9$Treatment
+  discTP9$INT <- as.factor(TP9$Treatment)
   
   # Let structure learning algorithm decide which arcs 
   # connect to INT.  
@@ -100,7 +100,7 @@ TP10 <- Pheno[Pheno$Timepoint == 10, ]
                         breaks = c(5, 5, 3, 5, 3, 5))
   
   # Add INT column. 
-  discTP10$INT <- TP10$Treatment
+  discTP10$INT <- as.factor(TP10$Treatment)
   
   # Let structure learning algorithm decide which arcs 
   # connect to INT.  
@@ -131,7 +131,7 @@ TP11 <- Pheno[Pheno$Timepoint == 11, ]
                          breaks = c(5, 5, 5, 3, 5))
   
   # Add INT column. 
-  discTP11$INT <- TP11$Treatment
+  discTP11$INT <- as.factor(TP11$Treatment)
   
   # Let structure learning algorithm decide which arcs 
   # connect to INT.  
@@ -162,7 +162,7 @@ TP12 <- Pheno[Pheno$Timepoint == 12, ]
                          breaks = c(5, 5, 5, 3, 5))
   
   # Add INT column. 
-  discTP12$INT <- TP12$Treatment
+  discTP12$INT <- as.factor(TP12$Treatment)
   
   # Let structure learning algorithm decide which arcs 
   # connect to INT.  
@@ -190,7 +190,7 @@ TP12 <- Pheno[Pheno$Timepoint == 12, ]
   dev.off()
 
 # Write csv files for arcs.
-  write.csv(bn.t8.arcs, file = "PhenoT8arcs.csv")
+  write.csv(bn.t8$arcs, file = "PhenoT8arcs.csv")
   write.csv(bn.t9$arcs, file = "PhenoT9arcs.csv")
   write.csv(bn.t10$arcs, file = "PhenoT10arcs.csv")
   write.csv(bn.t11$arcs, file = "PhenoT11arcs.csv")

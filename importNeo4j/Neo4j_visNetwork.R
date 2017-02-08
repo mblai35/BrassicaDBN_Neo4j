@@ -22,33 +22,42 @@ graph = startGraph("http://localhost:7474/db/data/", username = "neo4j",
 
 # Query for Intervention effects nodes. 
 query = "
-MATCH (n)-[]-(m)
+MATCH (n)-[]->(m)
 WHERE n.name < {x}
 RETURN n.name AS from, m.name AS to
 "
   
     # Return query and store in 'edges'. 
-    edges <- cypher(graph, query, x = "INT")
+    edges <- cypher(graph, query, x = "Stem")
     
     # Create unique nodes. 
     nodes = data.frame(id=unique(c(edges$from, edges$to)))
     nodes$label = nodes$id
     
     # Create an igraph object.
-    ig = graph_from_data_frame(edges, directed=T)
+    ig = graph_from_data_frame(edges, directed=F)
     
     # Make the sizes of the nodes a function of their 
     # betweenness centrality.
     nodes$value = betweenness(ig)
+    
+    color <- nodes$value
+    color[color > 16] <- 50
+    color[color == 0 ] <- 16
+    color[color < 16] <- 5
+    
+    # Color by edge_betweenness. 
+    # clusters = cluster_edge_betweenness(ig)
+    nodes$group = color
 
     # Plot network. 
     visNetwork(nodes, edges, 
-               main = "Connectedness of Nodes Affected by Intervention")
+               main = "Connectedness of Nodes Across Intervention")
     
     
 # Query for predawn and midday nodes. 
 query = "
-MATCH (n:Midday)-[:INFLUENCES]-(m:Midday) 
+MATCH (n:Midday)-[:INFLUENCES]->(m) 
 RETURN n.name AS from, m.name AS to
 "
 
@@ -60,20 +69,26 @@ RETURN n.name AS from, m.name AS to
     nodes$label = nodes$id
     
     # Create an igraph object.
-    ig = graph_from_data_frame(edges2, directed=T)
+    ig = graph_from_data_frame(edges2, directed=F)
     
     # Make the sizes of the nodes a function of their 
     # betweenness centrality.
     nodes$value = betweenness(ig)
     
+    color <- nodes$value
+    color[color > 16] <- 50
+    color[color == 0 ] <- 0
+    color[color < 5 & color > 0] <- 2
+    
+    
+    nodes$group = color
     # Plot network. 
-    visNetwork(nodes, edges, 
-               main = "Mid-Day Learned Intervention")
+    visNetwork(nodes, edges2)
     
     
 # Query for Photosynthesis nodes. 
 query = "
-    MATCH (n:Predawn)-[:INFLUENCES]-(m:Predawn) 
+    MATCH (n:Predawn)-[:INFLUENCES]->(m:Predawn) 
     RETURN n.name AS from, m.name AS to
     "
     
@@ -91,9 +106,10 @@ query = "
     # betweenness centrality.
     nodes$value = betweenness(ig)
     
+    color <- nodes$value
+    
+    nodes$group = color
     # Plot network. 
-    visNetwork(nodes, edges, 
-               main = "Pre-Dawn Learned Intervention")
-
+    visNetwork(nodes, edges3)
 
 
