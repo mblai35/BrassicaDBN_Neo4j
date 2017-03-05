@@ -13,7 +13,7 @@ library(stringr)
 
 #### Preprocessing: 
 
-# Read in phenotype file. 
+# Read in RNAseq file. 
 rna <- read.csv(file = "BrassicaDEgenes.csv", row.names = 1)
 
 # Remove cluster column. 
@@ -71,11 +71,11 @@ TP8 <- discRNA[discRNA$Timepoint == 8, ]
   bl <- tiers2blacklist(nodes = tiers)
   
   # Search for network.
-  bn.t8 <- tabu(TP9, blacklist = bl, score = "bde",
+  bn.t9 <- tabu(TP9, blacklist = bl, score = "bde",
                 iss = 10, tabu = 50)
   
   # Write csv of network arcs. 
-  write.csv(bn.t8$arcs, file = "TP9gene.csv")
+  write.csv(bn.t9$arcs, file = "TP9gene.csv")
   
   
   
