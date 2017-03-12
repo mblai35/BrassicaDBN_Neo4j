@@ -1,6 +1,6 @@
 # GeneDEmaSigPro2.R
 # R version 3.3.1 (2016-06-21)
-# January 26, 2017. Mallory B. Lai.
+# March 11, 2017. Mallory B. Lai.
 # Reviewed by: TODO (Mallory B. Lai) : Find reviewer to proofread
 # Creating transcriptomic network for Brassica data using 
 # simone package. Expression data taken from Brassica under well-watered
