@@ -65,41 +65,145 @@ ExprDesign <- cbind(Time, Replicates, D, W)
 # Make rownames the column names of the expression matrix. 
 rownames(ExprDesign) <- colnames(ExprMatrix)
 
-# Note: doing this will write a results pdf to the working directory.
+
+
+
+
+# Format the ExprDesign matrix. 
+formatExprDesign <- make.design.matrix(ExprDesign, degree = 5)
+
+# Perform regression fit for time series. 
+fit <- p.vector(ExprMatrix, design = formatExprDesign, 
+                Q = 0.025, counts = F)
+
+# Select regression model by stepwise regression. 
+model <- T.fit(fit, step.method = "two.ways.forward", alfa = .01)
+
+# Get the significantly expressed genes. 
+sigs <- get.siggenes(model, vars="each")
+
+# Print the significantly expressed genes. 
+summ <- sigs$summary
+
+# Note: this will write multiple png files to the working directory.
 # Make sure to set the directory to a directory you would like to keep
-# the file. 
+# the files. 
+
+# Create png plots for each gene in the WvsD column of summary.
+tiff(filename = "WvsD%03d.png", width = 8, height = 11, units = 'in', 
+     res = 300)
+par(mfrow = c(5,3))
+  for (i in 1:(length(unique(summ$WvsD))-1)){
+  k <- ExprMatrix[rownames(ExprMatrix) == as.character(summ$WvsD[i]), ]
+  PlotGroups(k, edesign = ExprDesign, main = as.character(summ$WvsD[i]))
+  }
+dev.off()
+
+
+# Create png plots for each gene in the Time5xW column of summary.
+tiff(filename = "Time5xW%03d.png", width = 8, height = 11, units = 'in', 
+     res = 300)
+par(mfrow = c(5,3))
+for (i in 1:(length(unique(summ$Time5xW))-1)){
+  k <- ExprMatrix[rownames(ExprMatrix) == as.character(summ$Time5xW[i]), ]
+  PlotGroups(k, edesign = ExprDesign, main = as.character(summ$Time5xW[i]))
+}
+dev.off()
+
+
+# Create png plots for first 200 genes in the Ind column of summary.
+tiff(filename = "IND%03d.png", width = 8, height = 11, 
+     units = 'in', res = 300)
+par(mfrow = c(5,3))
+for (i in 1:(length(unique(summ$independ))-858)){
+  k <- ExprMatrix[rownames(ExprMatrix) == 
+                    as.character(summ$independ[i]), ]
+  PlotGroups(k, edesign = ExprDesign, 
+             main = as.character(summ$independ[i]))
+}
+dev.off()
+
+
+# Write to csv file. 
+#write.csv(DEgenes, file = "BrassicaDEgenes.csv")
+
+  m <- sigs$sig.genes$WvsD$sig.pvalues
+
+top <- rep("NA", dim(m)[1])  
+  
+for (i in 1:(dim(m)[1])){  
+  if (sum(is.na(m[i, seq(4, 14, by = 2)])) < 3){
+    top[i] <- rownames(m[i, ])
+  }
+}
+
+i <- "Bra005337"
+k <- ExprMatrix[rownames(ExprMatrix) == i, ]
+PlotGroups(k, edesign = ExprDesign, 
+             main = i)
+  
+# Don't particularly care about summ$Time or summ$independ
+
+trmt <- summ[, seq(2, 12, by = 2)]
+trmt <- trmt[-c(128:1058), ]
+
+total <- c(as.character(trmt$WvsD), as.character(trmt$TimexW),
+           as.character(trmt$Time2xW), as.character(trmt$Time3xW),
+           as.character(trmt$Time4xW), as.character(trmt$Time5xW))
+
+total <- unique(total)
+
+tot <- rbind(sigs$sig.genes$WvsD$sig.profiles, 
+             sigs$sig.genes$TimexW$sig.profiles,
+             sigs$sig.genes$Time2xW$sig.profiles,
+             sigs$sig.genes$Time3xW$sig.profiles,
+             sigs$sig.genes$Time4xW$sig.profiles,
+             sigs$sig.genes$Time5xW$sig.profiles)
+
+
 # Run differential expression analysis. 
-DEanalysis <- maSigPro(ExprMatrix, ExprDesign, degree = 5)
+DEanalysis <- maSigPro(ExprMatrix, ExprDesign, 
+                       Q = .025, counts = F, 
+                       step.method = "two.ways.backward", 
+                       pdf = T, degree = 5)
 
 # Extract differentially expressed genes from output. 
 DEgenes <- rbind(DEanalysis$sig.genes$D$sig.profiles, 
                  DEanalysis$sig.genes$WvsD$sig.profiles)
 
-# Write to csv file. 
-write.csv(DEgenes, file = "BrassicaDEgenes.csv")
 
+inf <- DEanalysis$influ.info
 
+topInf <- inf[, which(colSums(inf) > 26)]
 
+# Create png plots for each gene in the inf data slot of summary.
+tiff(filename = "inf27%03d.png", width = 8, height = 11, units = 'in', 
+     res = 300)
+par(mfrow = c(5,3))
+for (i in 1:(length(colnames(topInf)))){
+  k <- ExprMatrix[rownames(ExprMatrix) == colnames(topInf)[i], ]
+  PlotGroups(k, edesign = ExprDesign, main = colnames(topInf)[i])
+}
+dev.off()
 
+genes <- DEanalysis$sig.genes$WvsD$sig.pvalues
 
+# Subset genes with more than one significant p-value for treatment.
+g <- genes[which(is.na(genes$p.valor_WvsD) == F 
+                 & is.na(genes$p.valor_TimexW) == F
+                 & is.na(genes$p.valor_Time2xW) == F
+                 & is.na(genes$p.valor_Time3xW) == F
+                 & is.na(genes$p.valor_Time4xW) == F
+                 & is.na(genes$p.valor_Time5xW) == F), ]
 
+# Create png plots for each gene in the inf data slot of summary.
+tiff(filename = "allTP%03d.png", width = 8, height = 11, units = 'in', 
+     res = 300)
+par(mfrow = c(5,3))
+for (i in 1:(length(rownames(g)))){
+  k <- ExprMatrix[rownames(ExprMatrix) == rownames(g)[i], ]
+  PlotGroups(k, edesign = ExprDesign, main = rownames(g)[i])
+}
+dev.off()
 
-# Alternatively...
-########################################################################
-# Format the ExprDesign matrix. 
-formatExprDesign <- make.design.matrix(ExprDesign, degree = 4)
-
-# Perform regression fit for time series. 
-fit <- p.vector(ExprMatrix, design = formatExprDesign, 
-                Q = 0.05, counts = F)
-
-# Select regression model by stepwise regression. 
-model <- T.fit(fit)
-
-# Get the significantly expressed genes. 
-get <- get.siggenes(model, vars="all")
-
-# Print the significantly expressed genes. 
-get$summary
-########################################################################
 
