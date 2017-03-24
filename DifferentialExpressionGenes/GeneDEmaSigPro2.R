@@ -8,7 +8,6 @@
 
 #-----------------------------------------------------------------------
 library(maSigPro)
-library(MASS)
 library(stringr)
 #-----------------------------------------------------------------------
 
@@ -62,19 +61,21 @@ D <- rep(c(1,0), each = 12)
 W <- rep(c(0,1), each = 12)
 ExprDesign <- cbind(Time, Replicates, D, W)
 
+# Remove expression matrix vectors. 
+rm(Time)
+rm(Replicates)
+rm(D)
+rm(W)
+
 # Make rownames the column names of the expression matrix. 
 rownames(ExprDesign) <- colnames(ExprMatrix)
-
-
-
-
 
 # Format the ExprDesign matrix. 
 formatExprDesign <- make.design.matrix(ExprDesign, degree = 5)
 
 # Perform regression fit for time series. 
 fit <- p.vector(ExprMatrix, design = formatExprDesign, 
-                Q = 0.025, counts = F)
+                Q = 0.01, counts = F)
 
 # Select regression model by stepwise regression. 
 model <- T.fit(fit, step.method = "two.ways.forward", alfa = .01)

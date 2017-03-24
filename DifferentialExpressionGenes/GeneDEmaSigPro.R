@@ -51,7 +51,6 @@ rm(BrassicaFPKM)
 
 # Coerce log2FPKM to a matrix. 
 ExprMatrix <- as.matrix(log2FPKM)
-ExprMatrix <- as.matrix(BrassicaFPKM)
 
 # Create design dataframe. 
 Time <- rep(c(rep(c(1:12), each = 2)), 2)
@@ -66,39 +65,63 @@ rownames(ExprDesign) <- colnames(ExprMatrix)
 # Note: doing this will write a results pdf to the working directory.
 # Make sure to set the directory to a directory you would like to keep
 # the file. 
-# Run differential expression analysis. 
-DEanalysis <- maSigPro(ExprMatrix, ExprDesign, degree = 4)
 
-# Extract differentially expressed genes from output. 
-DEgenes <- rbind(DEanalysis$sig.genes$D$sig.profiles, 
-                DEanalysis$sig.genes$WvsD$sig.profiles)
-
-# Write to csv file. 
-write.csv(DEgenes, file = "BrassicaDEgenes.csv")
-
-
-
-
-
-
-
-# Alternatively...
-########################################################################
 # Format the ExprDesign matrix. 
-formatExprDesign <- make.design.matrix(ExprDesign, degree = 4)
+formatExprDesign <- make.design.matrix(ExprDesign, degree = 11)
 
 # Perform regression fit for time series. 
 fit <- p.vector(ExprMatrix, design = formatExprDesign, 
                 Q = 0.05, counts = F)
 
 # Select regression model by stepwise regression. 
-model <- T.fit(fit)
+model <- T.fit(fit, step.method = "two.ways.forward", alfa = .05)
+
+# Investigation of influential data was performed. 
 
 # Get the significantly expressed genes. 
-get <- get.siggenes(model, vars="all")
+sigs <- get.siggenes(model, vars="groups", rsq = 0)
 
-# Print the significantly expressed genes. 
-get$summary
+# Save p-values for genes with treatment differences to a vector g. 
+g <- sigs$sig.genes$WvsD$sig.pvalues
+
+# For each timepoint, grab genes with a p-value less than .0001.
+g0 <- rownames(g[which(g$p.valor_WvsD < .0001), ])
+g1 <- rownames(g[which(g$p.valor_TimexW < .0001), ])
+g2 <- rownames(g[which(g$p.valor_Time2xW < .0001), ])
+g3 <- rownames(g[which(g$p.valor_Time3xW < .0001), ])
+g4 <- rownames(g[which(g$p.valor_Time4xW < .0001), ])
+g5 <- rownames(g[which(g$p.valor_Time5xW < .0001), ])
+g6 <- rownames(g[which(g$p.valor_Time6xW < .0001), ])
+g7 <- rownames(g[which(g$p.valor_Time7xW < .0001), ])
+g8 <- rownames(g[which(g$p.valor_Time8xW < .0001), ])
+g9 <- rownames(g[which(g$p.valor_Time9xW < .0001), ])
+g10 <- rownames(g[which(g$p.valor_Time10xW < .0001), ])
+g11 <- rownames(g[which(g$p.valor_Time11xW < .0001), ])
+
+highSigG <- rownames(g[which(g$`p-value` < .000000001), ])
+DEgenes <- ExprMatrix[highSigG, ]
+
+# Extract all unique gene names from each timepoint.
+DEgenes <- unique(c(g0, g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11))
+
+# Extract differentially expressed genes from ExprMatrix.
+DEgenes <- ExprMatrix[DEgenes, ]
 ########################################################################
 
+# Plot final DEgenes.
+tiff(filename = "highSigDEgenes%03d.png", width = 8, height = 11, 
+     units = 'in', res = 300)
+par(mfrow = c(5,3))
+for (i in 1:(dim(DEgenes)[1])){
+  k <- DEgenes[i, ]
+  PlotGroups(k, edesign = ExprDesign, main = rownames(DEgenes)[i])
+}
+dev.off()  
 
+p <- function(i){
+g[which(rownames(g) == i),]
+}
+
+g[which(rownames(g) == "Bra002221"),]
+
+p("Bra002221")
