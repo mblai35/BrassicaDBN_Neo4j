@@ -129,6 +129,9 @@ tp6 <- cbind(tp6, Photo = NA, gs = NA, "Fv'Fm'" = 0,
 Pheno <- rbind(Pheno, tp6)
 rm(tp6)
 
+# Reorder Soil moisture columns to match Photo and Starch. 
+Soil <- Soil[order(Soil[, 2], -Soil[, 1]), ]
+
 # Timepoint 7.
 tp7 <- Photo[Timepoint == 7]
 tp7 <- cbind(tp7,

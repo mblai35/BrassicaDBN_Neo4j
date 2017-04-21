@@ -3,14 +3,15 @@
 # January 15, 2017. Mallory B. Lai.
 # Reviewed by: TODO (Mallory B. Lai) : Find reviewer to proofread
 # Investigate accuracy of current values, remove extreme outliers, and
-# impute missing Brassica phenotype data for analysis.
+# impute missing Brassica phenotype data for analysis. Uses .csv file
+# generated from PhenoCombinedBrassicaDec13data.R.
 
 #-----------------------------------------------------------------------
 library(CoImp)
 #-----------------------------------------------------------------------
 
 # Read in combined phenotype file. 
-Pheno <- read.csv(file = "/Users/mblai/Documents/PhenotypeBrassica.csv")
+Pheno <- read.csv(file = "PhenotypeBrassica.csv")
 
 # Investigate the values for Photo. 
 boxplot(Pheno$Photo ~ Pheno$Timepoint)
