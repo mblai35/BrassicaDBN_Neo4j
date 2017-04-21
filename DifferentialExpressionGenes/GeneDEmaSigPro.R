@@ -8,8 +8,8 @@
 
 #-----------------------------------------------------------------------
 library(maSigPro)
-library(MASS)
 library(stringr)
+library(reshape2)
 #-----------------------------------------------------------------------
 
 #### Pre-processing: 
@@ -22,8 +22,7 @@ wwBrassicaFPKM <- read.table(file = "/Users/mblai/Documents/RNAseqData/R500_WW_F
 #wwBrassicaFPKM <- read.table(file = "R500_WW_FPKM.txt", header = T)
 
 
-# Remove non-unique genes. 
-# TODO: Look into why there are repeated rows.
+# Remove isoforms. 
 dBrassicaFPKM <- dBrassicaFPKM[duplicated(dBrassicaFPKM$gene_short_name) == 0, ]
 wwBrassicaFPKM <- wwBrassicaFPKM[duplicated(wwBrassicaFPKM$gene_short_name) == 0, ]
 
@@ -41,10 +40,10 @@ rownames(BrassicaFPKM) <- BrassicaFPKM$gene_short_name
 BrassicaFPKM <- BrassicaFPKM[, -c(1, 2, 27)]
 
 # Reduce data set to only genes with some expression. 
-BrassicaFPKM <- BrassicaFPKM[rowSums(BrassicaFPKM > 10) >= 48,]
+BrassicaFPKM <- BrassicaFPKM[rowSums(BrassicaFPKM > 10) >= 24,]
 
 # Log2 transform wwBrassicaFPKM data set. 
-log2FPKM <- log2(BrassicaFPKM)
+log2FPKM <- log2(BrassicaFPKM + .1)
 
 # Remove BrassicaFPKM data set.
 rm(BrassicaFPKM)
@@ -73,40 +72,58 @@ formatExprDesign <- make.design.matrix(ExprDesign, degree = 11)
 fit <- p.vector(ExprMatrix, design = formatExprDesign, 
                 Q = 0.05, counts = F)
 
-# Select regression model by stepwise regression. 
-model <- T.fit(fit, step.method = "two.ways.forward", alfa = .05)
+# Create a vector for looping methods. 
+method <- data.frame(backward = numeric(dim(log2FPKM)[1]), 
+                     forward = numeric(dim(log2FPKM)[1]), 
+                     two.ways.backward = numeric(dim(log2FPKM)[1]), 
+                     two.ways.forward = numeric(dim(log2FPKM)[1]))
 
-# Investigation of influential data was performed. 
+for (i in 1:4)
+{
+    # Select regression model by stepwise regression. 
+    model <- T.fit(fit, step.method = colnames(method)[i], alfa = .05)
+    
+    # Investigation of influential data was performed. 
+    
+    # Get the significantly expressed genes. 
+    sigs <- get.siggenes(model, vars="groups", rsq = 0)
+    
+    # Save p-values for genes with treatment differences to a vector g. 
+    g <- sigs$sig.genes$WvsD$sig.pvalues
+    
+    # For each timepoint, grab genes with a p-value less than .0001.
+    g0 <- rownames(g[which(g$p.valor_WvsD < .0001), ])
+    g1 <- rownames(g[which(g$p.valor_TimexW < .0001), ])
+    g2 <- rownames(g[which(g$p.valor_Time2xW < .0001), ])
+    g3 <- rownames(g[which(g$p.valor_Time3xW < .0001), ])
+    g4 <- rownames(g[which(g$p.valor_Time4xW < .0001), ])
+    g5 <- rownames(g[which(g$p.valor_Time5xW < .0001), ])
+    g6 <- rownames(g[which(g$p.valor_Time6xW < .0001), ])
+    g7 <- rownames(g[which(g$p.valor_Time7xW < .0001), ])
+    g8 <- rownames(g[which(g$p.valor_Time8xW < .0001), ])
+    g9 <- rownames(g[which(g$p.valor_Time9xW < .0001), ])
+    g10 <- rownames(g[which(g$p.valor_Time10xW < .0001), ])
+    g11 <- rownames(g[which(g$p.valor_Time11xW < .0001), ])
+    
+    # Extract all unique gene names from each timepoint.
+    DEgenes <- unique(c(g0, g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11))
+    
+    # Create DEgenes vector of with length equal to method dataframe.
+    DEgenes <- c(DEgenes, rep_len(NA, dim(method)[1] - length(DEgenes)))
+    
+    # Store in a vector named for its method.
+    method[, i] <- DEgenes
+    
+}
 
-# Get the significantly expressed genes. 
-sigs <- get.siggenes(model, vars="groups", rsq = 0)
-
-# Save p-values for genes with treatment differences to a vector g. 
-g <- sigs$sig.genes$WvsD$sig.pvalues
-
-# For each timepoint, grab genes with a p-value less than .0001.
-g0 <- rownames(g[which(g$p.valor_WvsD < .0001), ])
-g1 <- rownames(g[which(g$p.valor_TimexW < .0001), ])
-g2 <- rownames(g[which(g$p.valor_Time2xW < .0001), ])
-g3 <- rownames(g[which(g$p.valor_Time3xW < .0001), ])
-g4 <- rownames(g[which(g$p.valor_Time4xW < .0001), ])
-g5 <- rownames(g[which(g$p.valor_Time5xW < .0001), ])
-g6 <- rownames(g[which(g$p.valor_Time6xW < .0001), ])
-g7 <- rownames(g[which(g$p.valor_Time7xW < .0001), ])
-g8 <- rownames(g[which(g$p.valor_Time8xW < .0001), ])
-g9 <- rownames(g[which(g$p.valor_Time9xW < .0001), ])
-g10 <- rownames(g[which(g$p.valor_Time10xW < .0001), ])
-g11 <- rownames(g[which(g$p.valor_Time11xW < .0001), ])
-
-highSigG <- rownames(g[which(g$`p-value` < .000000001), ])
-DEgenes <- ExprMatrix[highSigG, ]
-
-# Extract all unique gene names from each timepoint.
-DEgenes <- unique(c(g0, g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11))
 
 # Extract differentially expressed genes from ExprMatrix.
 DEgenes <- ExprMatrix[DEgenes, ]
 ########################################################################
+
+
+
+
 
 # Plot final DEgenes.
 tiff(filename = "highSigDEgenes%03d.png", width = 8, height = 11, 
@@ -124,4 +141,4 @@ g[which(rownames(g) == i),]
 
 g[which(rownames(g) == "Bra002221"),]
 
-p("Bra002221")
+p("Bra032196")
