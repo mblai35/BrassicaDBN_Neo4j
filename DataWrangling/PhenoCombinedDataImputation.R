@@ -99,8 +99,62 @@ boxplot(PhenoCombined$NSC ~ PhenoCombined$Timepoint)
 # Seems reasonable. 
 
 # Investigate the appropriateness of imputed values for Soil Moisture. 
-boxplot(PhenoCombined$SM... ~ PhenoCombined$Timepoint)
-# Seems reasonable. 
+boxplot(PhenoCombined$SM... ~ PhenoCombined$Timepoint + 
+          PhenoCombined$Treatment)
+# Much higher variability in imputed values than other timepoints. 
+
+# Over-write imputed values from Soil moisture at timepoints 5 & 6. 
+PhenoCombined[PhenoCombined$Timepoint == 5, "SM..."] <- NA
+PhenoCombined[PhenoCombined$Timepoint == 6, "SM..."] <- NA 
+
+# Sample from Timepoints 4 and 7 to impute values. 
+w <- sample(c(PhenoCombined[PhenoCombined$Timepoint == 4 & 
+                            PhenoCombined$Treatment == "WW", "SM..."],
+              PhenoCombined[PhenoCombined$Timepoint == 7 & 
+                            PhenoCombined$Treatment == "WW", "SM..."]), 
+                            12, replace = T)
+
+# Update data.frame with sampled values.    
+PhenoCombined[PhenoCombined$Timepoint == 5 & 
+                PhenoCombined$Treatment == "WW", "SM..."] <- w
+
+# Repeat for Dry Treatment.
+d <- sample(c(PhenoCombined[PhenoCombined$Timepoint == 4 & 
+                            PhenoCombined$Treatment == "Dry", "SM..."],
+              PhenoCombined[PhenoCombined$Timepoint == 7 & 
+                            PhenoCombined$Treatment == "Dry", "SM..."]), 
+                            12, replace = T)
+
+# Update data.frame with sampled values. 
+PhenoCombined[PhenoCombined$Timepoint == 5 & 
+                PhenoCombined$Treatment == "Dry", "SM..."] <- d
+
+# Sample from Timepoints 4 and 7 to impute values. 
+w <- sample(c(PhenoCombined[PhenoCombined$Timepoint == 4 & 
+                              PhenoCombined$Treatment == "WW", "SM..."],
+              PhenoCombined[PhenoCombined$Timepoint == 7 & 
+                              PhenoCombined$Treatment == "WW", "SM..."]), 
+            12, replace = T)
+
+# Update data.frame with sampled values.    
+PhenoCombined[PhenoCombined$Timepoint == 6 & 
+                PhenoCombined$Treatment == "WW", "SM..."] <- w
+
+# Repeat for Dry Treatment.
+d <- sample(c(PhenoCombined[PhenoCombined$Timepoint == 4 & 
+                              PhenoCombined$Treatment == "Dry", "SM..."],
+              PhenoCombined[PhenoCombined$Timepoint == 7 & 
+                              PhenoCombined$Treatment == "Dry", "SM..."]), 
+            12, replace = T)
+
+# Update data.frame with sampled values. 
+PhenoCombined[PhenoCombined$Timepoint == 6 & 
+                PhenoCombined$Treatment == "Dry", "SM..."] <- d
+
+# Investigate the appropriateness of imputed values for Soil Moisture. 
+boxplot(PhenoCombined$SM... ~ PhenoCombined$Timepoint + 
+          PhenoCombined$Treatment)
+# Much better. 
 
 # Write to csv file. 
 write.csv(PhenoCombined, file = "PhenoBrassicaImp.csv")
